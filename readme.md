@@ -9,6 +9,7 @@ pip install -r requirements.txt
 python3 valid_job_extractor.py --time 24 --exp 2 --size small
 ```
 #### Arguments
-- `size` can be small, medium or large
+- `size` can be medium or large
 - `time` is the time in hours for the oldest allowed job
 - `exp` is the number of maximum number of years of experience allowed for a job
+- `model` is for specifying which model to use for inferencing(currently supports roberta and flan-t5).
