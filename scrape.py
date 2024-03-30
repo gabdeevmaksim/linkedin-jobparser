@@ -44,7 +44,8 @@ blacklist = [
             'Sicredi', 'TekWissen', 'Creative Financial Staffing', 'Proconex', 'American Cruise Lines', 'eteam', 'Primary Talent Partners',
             'Fidelity TalentSource', 'Cottingham & Butler', 'Phoenix Recruitment', 'Wabtec Corporation', 'Oak Ridge National Laboratory',
             'Luminate', 'Freddie Mac', 'Prudential Financial', 'VPNforAndroid', 'Almac Group', 'Hertz', 'Jobs via eFinancialCareers', 'TalentBurst',
-            'Procter & Gamble', 'Medpace', 'Robert Half', 'Russell Tobin', 'Genesis10', 'Aditi Consulting', 'Skiltrek', 'SPECTRAFORCE'
+            'Procter & Gamble', 'Medpace', 'Robert Half', 'Russell Tobin', 'Genesis10', 'Aditi Consulting', 'Skiltrek', 'SPECTRAFORCE', 'ZetaChain',
+            'Infinite Computer Solutions', 'Listopro', 'RIT Solutions, Inc.', 'Crystal Equation Corporation'
         ]
 
 def load_existing_jobIDs(file_name):
@@ -61,8 +62,8 @@ def scrape_job_postings(job_ids, filter_time, roles):
     target_url='https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords="{}"&location=United%20States&geoId=103644278&f_E=2&f_TPR=r{}&start={}'
     
     roles = [quote(role) for role in roles]
-    relevance = []
-    tokenizer, model = get_model("large")
+    # relevance = []
+    # tokenizer, model = get_model("large")
     total = 0
     for role in roles:
         alljobs_on_this_page={}

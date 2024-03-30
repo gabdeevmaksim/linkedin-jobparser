@@ -7,30 +7,34 @@ import os
 parser = argparse.ArgumentParser()
 parser.add_argument("--time", type=int, help="Time window of search")
 parser.add_argument("--exp", type=int, help="maximum experience allowed for the jobs ")
-parser.add_argument("--size", type=str, help="size of the flan-t5 model used to parse the job experience")
+parser.add_argument("--size", type=str, help="size of the model used to parse the job experience")
+parser.add_argument("--model", type=str, help="name of the model used to parse the job experience")
 
 args = parser.parse_args()
 
-source_file_name = 'linkedinjobs4.csv'
-target_file = 'validjobs2.csv'
+source_file_name = 'linkedinjobs_v3.csv'
+target_file = 'validjobs.csv'
 
 max_experience = 2              # the maximum experience allowed for the jobs
-if args.exp != None:
+if args.exp:
     max_experience = args.exp
 
 filter_time = 48 * 60 * 60      # filter time is specified in milliseconds
-if args.time != None:
+if args.time:
     filter_time = args.time * 60 * 60
 
-model_size = "small"            # size of the flan-t5 model used to parse job experience
-if args.size != None:
+model_name = "roberta"          # It can be robert or flan-t5
+if args.model:
+    model_name = args.model
+
+model_size = "large"            # size of the model used to parse job experience it can be medium or large
+if args.size:
     model_size = args.size
 
 # This is a list of roles that are searched for on linkedin
 roles = ['Full Stack', '"Software Engineer"', '"Software Developer"', 'Founding Engineer', 'Frontend', 'Backend', 'Data Engineer']
-
-get_job_details(source_file_name, roles, filter_time)
-process_linkedin_jobs(source_file_name, model_size)
+# get_job_details(source_file_name, roles, filter_time)
+process_linkedin_jobs(file_name=source_file_name, model_name=model_name, model_size=model_size)
 
 df = pd.read_csv(source_file_name)
 df['experience'] = pd.to_numeric(df['experience'], errors='coerce')
