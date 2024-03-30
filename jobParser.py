@@ -28,24 +28,27 @@ def get_flan(job_description:str, question:str, model, tokenizer):
     result = BeautifulSoup(tokenizer.decode(outputs[0]), "html.parser").get_text(separator=' ', strip=True)
     return result
 
+def text_to_num(text):
+    num_dict = {
+        "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, 
+        "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10
+    }
+    return num_dict.get(text.lower())
+
 def find_highest_lowest(s):
-    numbers = re.findall(r'\d+\+|\d+-\d+|\d+', s)
+    number_patterns = re.findall(r'\b[a-zA-Z]+\b|\d+', s)
     processed_numbers = []
-    for num in numbers:
-        if '-' in num:
-            start, end = map(int, num.split('-'))
-            processed_numbers.extend(range(start, end + 1))
-        elif '+' in num:
-            processed_numbers.append(float(num.replace('+', '')) + 0.5)
+    for num in number_patterns:
+        if num.isalpha():
+            number = text_to_num(num)
+            if number is not None:
+                processed_numbers.append(number)
         else:
             processed_numbers.append(int(num))
-    
+    processed_numbers = [x for x in processed_numbers if x <= 10]
     if not processed_numbers:
         return 0, 0
-
     return max(processed_numbers), min(processed_numbers)
-
-progress_lock = threading.Lock()
     
 def get_model(name:str, size:str):
     if size == "medium": size = "base"
@@ -59,13 +62,6 @@ def get_model(name:str, size:str):
         model = T5ForConditionalGeneration.from_pretrained(f"google/flan-t5-{size}")
         func = lambda job_description, question: get_flan(job_description=job_description, question=question, model=model, tokenizer=tokenizer)
     return tokenizer, model, func
-
-def parse_experience(tokenizer, model, job_description, question):
-    input_text = f"Job Description: {job_description} question={question}, Answer:"
-    input_ids = tokenizer(input_text, return_tensors="pt").input_ids
-    outputs = model.generate(input_ids, max_new_tokens=20, max_length=50)
-    result = BeautifulSoup(tokenizer.decode(outputs[0]), "html.parser").get_text(separator=' ', strip=True)
-    return result
 
 def parse_title(tokenizer, model, job_title, question):
     input_text = f"Job title: {job_title} question={question}, Answer with yes or no:"
@@ -90,16 +86,14 @@ def process_row(row, index, parser, column_name:str):
     job_description = ' '.join(job_description.split())
     text = parser(job_description, question) 
     _, low = find_highest_lowest(text)
-
     return index, low
 
 
 def process_linkedin_jobs(file_name, model_name:str, model_size:str):
     df = pd.read_csv(file_name)
-    exp_column_name = "rqal6_experience"
+    exp_column_name = "experience"
     if exp_column_name not in df.columns:
         df[exp_column_name] = pd.Series(dtype='int64')
-    
 
     _, _, parser = get_model(model_name, model_size)
     number_of_threads = 10
@@ -109,10 +103,9 @@ def process_linkedin_jobs(file_name, model_name:str, model_size:str):
         for i, future in enumerate(as_completed(futures)):
             progress_bar(total=len(df), current=i)
             index, result = future.result()
-            if result:
+            if result != None:
                 df.at[index, exp_column_name] = result
             progress_bar(current=i + 1, total=len(df))
-
 
     df.to_csv(file_name, index=False)
     sys.stdout.write('\r')

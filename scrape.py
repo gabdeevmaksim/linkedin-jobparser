@@ -80,7 +80,7 @@ def scrape_job_postings(job_ids, filter_time, roles):
                 if len(alljobs_on_this_page) == 0:
                     raise ValueError('No jobs found on this page')
                 i += len(alljobs_on_this_page) + 1
-                print(f"Scraped {i} jobs", end='\r', flush=True)
+                print(f"Try[{retries + 1}/{MAX_RETRIES}]: Scraped {i} jobs", end='\r', flush=True)
                 for x in range(0,len(alljobs_on_this_page)):
                     job_id = alljobs_on_this_page[x].find("div",{"class":"base-card"}).get('data-entity-urn').split(":")[3]
                     jobcard = alljobs_on_this_page[x].find("div",{"class":"base-card"}).text.strip()
@@ -103,10 +103,10 @@ def scrape_job_postings(job_ids, filter_time, roles):
                     if flag == False:
                         jobs.append(job_id)
             except Exception as e:
-                print("\nRetry:"+str(retries), end='\r')
                 if retries < MAX_RETRIES:
                     retries += 1
                     continue
+                print()
                 break
         total += i
     # df1 = pd.DataFrame(relevance)
@@ -167,7 +167,10 @@ def get_job_details(file_name, roles, filter_time=86400):
 
     df = pd.DataFrame(job_details)
     if os.path.exists(file_name):
-        df.to_csv(file_name, mode='a', index=False, header=False, encoding='utf-8')
+        # df.to_csv(file_name, mode='a', index=False, header=False, encoding='utf-8')
+        with open(file_name, 'a', encoding='utf-8') as f:
+            f.seek(0, os.SEEK_END)
+            df.to_csv(f, index=False, header=False)
     else:
         df.to_csv(file_name, mode='w', index=False, header=True, encoding='utf-8')
     print("\nDone scraping")

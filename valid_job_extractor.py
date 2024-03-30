@@ -12,8 +12,8 @@ parser.add_argument("--model", type=str, help="name of the model used to parse t
 
 args = parser.parse_args()
 
-source_file_name = 'linkedinjobs_v3.csv'
-target_file = 'validjobs.csv'
+source_file_name = 'all_linkedinjobs.csv'
+target_file = 'filtered_jobs.csv'
 
 max_experience = 2              # the maximum experience allowed for the jobs
 if args.exp:
@@ -33,7 +33,7 @@ if args.size:
 
 # This is a list of roles that are searched for on linkedin
 roles = ['Full Stack', '"Software Engineer"', '"Software Developer"', 'Founding Engineer', 'Frontend', 'Backend', 'Data Engineer']
-# get_job_details(source_file_name, roles, filter_time)
+get_job_details(file_name=source_file_name, roles=roles, filter_time=filter_time)
 process_linkedin_jobs(file_name=source_file_name, model_name=model_name, model_size=model_size)
 
 df = pd.read_csv(source_file_name)
